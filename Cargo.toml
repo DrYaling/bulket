@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "shared",
+    "gameplay",
+    "engine-api"
+]
+#[profile.release]
+#debug = true
