@@ -8,16 +8,11 @@ public class RustGamePlay : ModuleRules
 	public RustGamePlay(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
-		PublicDependencyModuleNames.AddRange(new string[]
-        {
-            "Core", 
-            "HeadMountedDisplay", 
-            "EnhancedInput"
-        });
         PrivateDependencyModuleNames.AddRange(new string[]
         {
-
+            "Core",
+            "HeadMountedDisplay",
+            "EnhancedInput",
             "Projects",
             "InputCore",
             "EditorFramework",
@@ -35,6 +30,7 @@ public class RustGamePlay : ModuleRules
             "EditorWidgets",
             "ClassViewer",
             "EditorStyle",
+            "AIModule"
         });
 	}
 }
