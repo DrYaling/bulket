@@ -4096,10 +4096,6 @@ extern "C"{
 		auto result = ((UWorld*)target)->EditorDestroyActor(Actor, bShouldModifyLevel);	
 		return result;	
 	}
-	bool uapi_UWorld_EncroachingBlockingGeometry(void* target, AActor* TestActor, Vector3 TestLocation, Rotator TestRotation, Vector3* ProposedAdjustment){	
-		auto result = ((UWorld*)target)->EncroachingBlockingGeometry(TestActor, ToFVector(TestLocation), ToFRotator(TestRotation), ToFVector(*ProposedAdjustment));	
-		return result;	
-	}
 	void uapi_UWorld_EnsureCollisionTreeIsBuilt(void* target){	
 		((UWorld*)target)->EnsureCollisionTreeIsBuilt();	
 	}
@@ -4115,10 +4111,6 @@ extern "C"{
 	}
 	void uapi_UWorld_FlushDeferredParameterCollectionInstanceUpdates(void* target){	
 		((UWorld*)target)->FlushDeferredParameterCollectionInstanceUpdates();	
-	}
-	void* uapi_UWorld_FollowWorldRedirectorInPackage(UPackage* Package, UObjectRedirector* OptionalOutRedirector){	
-		auto result = (void*)(UWorld::FollowWorldRedirectorInPackage(Package, OptionalOutRedirector));	
-		return result;	
 	}
 	void* uapi_UWorld_GetAISystem(void* target){	
 		auto result = (void*)((UWorld*)target)->GetAISystem();	
@@ -4536,9 +4528,6 @@ extern "C"{
 	void uapi_UWorld_PostLoad(void* target){	
 		((UWorld*)target)->PostLoad();	
 	}
-	void uapi_UWorld_ProcessLevelStreamingVolumes(void* target, Vector3* OverrideViewLocation){	
-		((UWorld*)target)->ProcessLevelStreamingVolumes(ToFVector(*OverrideViewLocation));	
-	}
 	void uapi_UWorld_PropagateLightingScenarioChange(void* target){	
 		((UWorld*)target)->PropagateLightingScenarioChange();	
 	}
@@ -4659,9 +4648,6 @@ extern "C"{
 	}
 	void uapi_UWorld_StartPhysicsSim(void* target){	
 		((UWorld*)target)->StartPhysicsSim();	
-	}
-	void uapi_UWorld_StoreIrisAndClearReferences(void* target){	
-		((UWorld*)target)->StoreIrisAndClearReferences();	
 	}
 	bool uapi_UWorld_SupportsMakingInvisibleTransactionRequests(void* target){	
 		auto result = ((UWorld*)target)->SupportsMakingInvisibleTransactionRequests();	
@@ -9868,8 +9854,6 @@ using uapi_UWorld_DuplicateRequestedLevelsFn = void(*)(void(*)(void* target,UNam
 
 using uapi_UWorld_EditorDestroyActorFn = void(*)(bool(*)(void* target,AActor* Actor,bool bShouldModifyLevel));
 
-using uapi_UWorld_EncroachingBlockingGeometryFn = void(*)(bool(*)(void* target,AActor* TestActor,Vector3 TestLocation,Rotator TestRotation,Vector3* ProposedAdjustment));
-
 using uapi_UWorld_EnsureCollisionTreeIsBuiltFn = void(*)(void(*)(void* target));
 
 using uapi_UWorld_FindWorldInPackageFn = void(*)(void*(*)(UPackage* Package));
@@ -9879,8 +9863,6 @@ using uapi_UWorld_FinishDestroyFn = void(*)(void(*)(void* target));
 using uapi_UWorld_FinishPhysicsSimFn = void(*)(void(*)(void* target));
 
 using uapi_UWorld_FlushDeferredParameterCollectionInstanceUpdatesFn = void(*)(void(*)(void* target));
-
-using uapi_UWorld_FollowWorldRedirectorInPackageFn = void(*)(void*(*)(UPackage* Package,UObjectRedirector* OptionalOutRedirector));
 
 using uapi_UWorld_GetAISystemFn = void(*)(void*(*)(void* target));
 
@@ -10098,8 +10080,6 @@ using uapi_UWorld_PostInitializeSubsystemsFn = void(*)(void(*)(void* target));
 
 using uapi_UWorld_PostLoadFn = void(*)(void(*)(void* target));
 
-using uapi_UWorld_ProcessLevelStreamingVolumesFn = void(*)(void(*)(void* target,Vector3* OverrideViewLocation));
-
 using uapi_UWorld_PropagateLightingScenarioChangeFn = void(*)(void(*)(void* target));
 
 using uapi_UWorld_RefreshStreamingLevelsFn = void(*)(void(*)(void* target));
@@ -10175,8 +10155,6 @@ using uapi_UWorld_ShrinkLevelFn = void(*)(void(*)(void* target));
 using uapi_UWorld_SpawnBrushFn = void(*)(void*(*)(void* target));
 
 using uapi_UWorld_StartPhysicsSimFn = void(*)(void(*)(void* target));
-
-using uapi_UWorld_StoreIrisAndClearReferencesFn = void(*)(void(*)(void* target));
 
 using uapi_UWorld_SupportsMakingInvisibleTransactionRequestsFn = void(*)(bool(*)(void* target));
 
@@ -17620,11 +17598,6 @@ void register_all(Plugin* plugin){
         apiuapi_UWorld_EditorDestroyActor(&uapi_UWorld_EditorDestroyActor);
     }
 
-    auto const apiuapi_UWorld_EncroachingBlockingGeometry = (uapi_UWorld_EncroachingBlockingGeometryFn)plugin->GetDllExport(TEXT("set_UWorld_EncroachingBlockingGeometry_handler\0"));
-    if(apiuapi_UWorld_EncroachingBlockingGeometry){
-        apiuapi_UWorld_EncroachingBlockingGeometry(&uapi_UWorld_EncroachingBlockingGeometry);
-    }
-
     auto const apiuapi_UWorld_EnsureCollisionTreeIsBuilt = (uapi_UWorld_EnsureCollisionTreeIsBuiltFn)plugin->GetDllExport(TEXT("set_UWorld_EnsureCollisionTreeIsBuilt_handler\0"));
     if(apiuapi_UWorld_EnsureCollisionTreeIsBuilt){
         apiuapi_UWorld_EnsureCollisionTreeIsBuilt(&uapi_UWorld_EnsureCollisionTreeIsBuilt);
@@ -17648,11 +17621,6 @@ void register_all(Plugin* plugin){
     auto const apiuapi_UWorld_FlushDeferredParameterCollectionInstanceUpdates = (uapi_UWorld_FlushDeferredParameterCollectionInstanceUpdatesFn)plugin->GetDllExport(TEXT("set_UWorld_FlushDeferredParameterCollectionInstanceUpdates_handler\0"));
     if(apiuapi_UWorld_FlushDeferredParameterCollectionInstanceUpdates){
         apiuapi_UWorld_FlushDeferredParameterCollectionInstanceUpdates(&uapi_UWorld_FlushDeferredParameterCollectionInstanceUpdates);
-    }
-
-    auto const apiuapi_UWorld_FollowWorldRedirectorInPackage = (uapi_UWorld_FollowWorldRedirectorInPackageFn)plugin->GetDllExport(TEXT("set_UWorld_FollowWorldRedirectorInPackage_handler\0"));
-    if(apiuapi_UWorld_FollowWorldRedirectorInPackage){
-        apiuapi_UWorld_FollowWorldRedirectorInPackage(&uapi_UWorld_FollowWorldRedirectorInPackage);
     }
 
     auto const apiuapi_UWorld_GetAISystem = (uapi_UWorld_GetAISystemFn)plugin->GetDllExport(TEXT("set_UWorld_GetAISystem_handler\0"));
@@ -18195,11 +18163,6 @@ void register_all(Plugin* plugin){
         apiuapi_UWorld_PostLoad(&uapi_UWorld_PostLoad);
     }
 
-    auto const apiuapi_UWorld_ProcessLevelStreamingVolumes = (uapi_UWorld_ProcessLevelStreamingVolumesFn)plugin->GetDllExport(TEXT("set_UWorld_ProcessLevelStreamingVolumes_handler\0"));
-    if(apiuapi_UWorld_ProcessLevelStreamingVolumes){
-        apiuapi_UWorld_ProcessLevelStreamingVolumes(&uapi_UWorld_ProcessLevelStreamingVolumes);
-    }
-
     auto const apiuapi_UWorld_PropagateLightingScenarioChange = (uapi_UWorld_PropagateLightingScenarioChangeFn)plugin->GetDllExport(TEXT("set_UWorld_PropagateLightingScenarioChange_handler\0"));
     if(apiuapi_UWorld_PropagateLightingScenarioChange){
         apiuapi_UWorld_PropagateLightingScenarioChange(&uapi_UWorld_PropagateLightingScenarioChange);
@@ -18388,11 +18351,6 @@ void register_all(Plugin* plugin){
     auto const apiuapi_UWorld_StartPhysicsSim = (uapi_UWorld_StartPhysicsSimFn)plugin->GetDllExport(TEXT("set_UWorld_StartPhysicsSim_handler\0"));
     if(apiuapi_UWorld_StartPhysicsSim){
         apiuapi_UWorld_StartPhysicsSim(&uapi_UWorld_StartPhysicsSim);
-    }
-
-    auto const apiuapi_UWorld_StoreIrisAndClearReferences = (uapi_UWorld_StoreIrisAndClearReferencesFn)plugin->GetDllExport(TEXT("set_UWorld_StoreIrisAndClearReferences_handler\0"));
-    if(apiuapi_UWorld_StoreIrisAndClearReferences){
-        apiuapi_UWorld_StoreIrisAndClearReferences(&uapi_UWorld_StoreIrisAndClearReferences);
     }
 
     auto const apiuapi_UWorld_SupportsMakingInvisibleTransactionRequests = (uapi_UWorld_SupportsMakingInvisibleTransactionRequestsFn)plugin->GetDllExport(TEXT("set_UWorld_SupportsMakingInvisibleTransactionRequests_handler\0"));

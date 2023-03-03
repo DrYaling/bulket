@@ -116,7 +116,6 @@ mod opaque_types{
 	pub type UMaterialParameterCollectionOpaque = c_void;//cpp type UMaterialParameterCollection
 	pub type FSceneViewOpaque = c_void;//cpp type FSceneView
 	pub type UAISystemBaseOpaque = c_void;//cpp type UAISystemBase
-	pub type UObjectRedirectorOpaque = c_void;//cpp type UObjectRedirector
 	pub type FLevelCollectionOpaque = c_void;//cpp type FLevelCollection
 	pub type FAudioDeviceOpaque = c_void;//cpp type FAudioDevice
 	pub type UAvoidanceManagerOpaque = c_void;//cpp type UAvoidanceManager
@@ -5313,10 +5312,6 @@ impl UWorld{
 		unsafe{ UWorld_EditorDestroyActorInvokerHandler.as_ref().unwrap()(self.inner, Actor.inner(), bShouldModifyLevel) }
 	}
 	#[inline]
-	pub fn EncroachingBlockingGeometry(&mut self, TestActor: &AActor, TestLocation: Vector3, TestRotation: Rotator, ProposedAdjustment: *mut Vector3) -> bool{
-		unsafe{ UWorld_EncroachingBlockingGeometryInvokerHandler.as_ref().unwrap()(self.inner, TestActor.inner(), TestLocation, TestRotation, ProposedAdjustment) }
-	}
-	#[inline]
 	pub fn EnsureCollisionTreeIsBuilt(&mut self){
 		unsafe{ UWorld_EnsureCollisionTreeIsBuiltInvokerHandler.as_ref().unwrap()(self.inner) }
 	}
@@ -5335,10 +5330,6 @@ impl UWorld{
 	#[inline]
 	pub fn FlushDeferredParameterCollectionInstanceUpdates(&mut self){
 		unsafe{ UWorld_FlushDeferredParameterCollectionInstanceUpdatesInvokerHandler.as_ref().unwrap()(self.inner) }
-	}
-	#[inline]
-	pub fn FollowWorldRedirectorInPackage(Package: *mut UPackageOpaque, OptionalOutRedirector: *mut UObjectRedirectorOpaque) -> Option<UWorld>{
-		unsafe{ UWorld::from_ptr(UWorld_FollowWorldRedirectorInPackageInvokerHandler.as_ref().unwrap()(Package, OptionalOutRedirector)) }
 	}
 	#[inline]
 	pub fn GetAISystem(&mut self) -> *mut UAISystemBaseOpaque{
@@ -5773,10 +5764,6 @@ impl UWorld{
 		unsafe{ UWorld_PostLoadInvokerHandler.as_ref().unwrap()(self.inner) }
 	}
 	#[inline]
-	pub fn ProcessLevelStreamingVolumes(&mut self, OverrideViewLocation: *mut Vector3){
-		unsafe{ UWorld_ProcessLevelStreamingVolumesInvokerHandler.as_ref().unwrap()(self.inner, OverrideViewLocation) }
-	}
-	#[inline]
 	pub fn PropagateLightingScenarioChange(&mut self){
 		unsafe{ UWorld_PropagateLightingScenarioChangeInvokerHandler.as_ref().unwrap()(self.inner) }
 	}
@@ -5927,10 +5914,6 @@ impl UWorld{
 	#[inline]
 	pub fn StartPhysicsSim(&mut self){
 		unsafe{ UWorld_StartPhysicsSimInvokerHandler.as_ref().unwrap()(self.inner) }
-	}
-	#[inline]
-	pub fn StoreIrisAndClearReferences(&mut self){
-		unsafe{ UWorld_StoreIrisAndClearReferencesInvokerHandler.as_ref().unwrap()(self.inner) }
 	}
 	#[inline]
 	pub fn SupportsMakingInvisibleTransactionRequests(&self) -> bool{
@@ -17460,13 +17443,6 @@ mod ffis{
         unsafe{ UWorld_EditorDestroyActorInvokerHandler = Some(handler) };
     }
 
-    type UWorld_EncroachingBlockingGeometryInvoker = unsafe extern "C" fn(*mut c_void, *mut AActorOpaque, Vector3, Rotator, *mut Vector3) -> bool;
-    pub(super) static mut UWorld_EncroachingBlockingGeometryInvokerHandler: Option<UWorld_EncroachingBlockingGeometryInvoker> = None;
-    #[no_mangle]
-    extern "C" fn set_UWorld_EncroachingBlockingGeometry_handler(handler: UWorld_EncroachingBlockingGeometryInvoker){
-        unsafe{ UWorld_EncroachingBlockingGeometryInvokerHandler = Some(handler) };
-    }
-
     type UWorld_EnsureCollisionTreeIsBuiltInvoker = unsafe extern "C" fn(*mut c_void);
     pub(super) static mut UWorld_EnsureCollisionTreeIsBuiltInvokerHandler: Option<UWorld_EnsureCollisionTreeIsBuiltInvoker> = None;
     #[no_mangle]
@@ -17500,13 +17476,6 @@ mod ffis{
     #[no_mangle]
     extern "C" fn set_UWorld_FlushDeferredParameterCollectionInstanceUpdates_handler(handler: UWorld_FlushDeferredParameterCollectionInstanceUpdatesInvoker){
         unsafe{ UWorld_FlushDeferredParameterCollectionInstanceUpdatesInvokerHandler = Some(handler) };
-    }
-
-    type UWorld_FollowWorldRedirectorInPackageInvoker = unsafe extern "C" fn(*mut UPackageOpaque, *mut UObjectRedirectorOpaque) -> *mut UWorldOpaque;
-    pub(super) static mut UWorld_FollowWorldRedirectorInPackageInvokerHandler: Option<UWorld_FollowWorldRedirectorInPackageInvoker> = None;
-    #[no_mangle]
-    extern "C" fn set_UWorld_FollowWorldRedirectorInPackage_handler(handler: UWorld_FollowWorldRedirectorInPackageInvoker){
-        unsafe{ UWorld_FollowWorldRedirectorInPackageInvokerHandler = Some(handler) };
     }
 
     type UWorld_GetAISystemInvoker = unsafe extern "C" fn(*mut c_void) -> *mut UAISystemBaseOpaque;
@@ -18265,13 +18234,6 @@ mod ffis{
         unsafe{ UWorld_PostLoadInvokerHandler = Some(handler) };
     }
 
-    type UWorld_ProcessLevelStreamingVolumesInvoker = unsafe extern "C" fn(*mut c_void, *mut Vector3);
-    pub(super) static mut UWorld_ProcessLevelStreamingVolumesInvokerHandler: Option<UWorld_ProcessLevelStreamingVolumesInvoker> = None;
-    #[no_mangle]
-    extern "C" fn set_UWorld_ProcessLevelStreamingVolumes_handler(handler: UWorld_ProcessLevelStreamingVolumesInvoker){
-        unsafe{ UWorld_ProcessLevelStreamingVolumesInvokerHandler = Some(handler) };
-    }
-
     type UWorld_PropagateLightingScenarioChangeInvoker = unsafe extern "C" fn(*mut c_void);
     pub(super) static mut UWorld_PropagateLightingScenarioChangeInvokerHandler: Option<UWorld_PropagateLightingScenarioChangeInvoker> = None;
     #[no_mangle]
@@ -18536,13 +18498,6 @@ mod ffis{
     #[no_mangle]
     extern "C" fn set_UWorld_StartPhysicsSim_handler(handler: UWorld_StartPhysicsSimInvoker){
         unsafe{ UWorld_StartPhysicsSimInvokerHandler = Some(handler) };
-    }
-
-    type UWorld_StoreIrisAndClearReferencesInvoker = unsafe extern "C" fn(*mut c_void);
-    pub(super) static mut UWorld_StoreIrisAndClearReferencesInvokerHandler: Option<UWorld_StoreIrisAndClearReferencesInvoker> = None;
-    #[no_mangle]
-    extern "C" fn set_UWorld_StoreIrisAndClearReferences_handler(handler: UWorld_StoreIrisAndClearReferencesInvoker){
-        unsafe{ UWorld_StoreIrisAndClearReferencesInvokerHandler = Some(handler) };
     }
 
     type UWorld_SupportsMakingInvisibleTransactionRequestsInvoker = unsafe extern "C" fn(*mut c_void) -> bool;
