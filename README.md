@@ -21,6 +21,6 @@ If you have any questions please submit issues both on this rep or tool rep.
 
     This project is in very early stage, many apis maybe not stable,and game has only limited functions .
 
-    I will stick on this project(or unreal-rust framework),to learn unreal and find a player way to write(make) game.
+    I will stick on this project(or unreal-rust framework),to learn unreal and find a playsure way to write(make) game.
 
-    Welcome everyone to give me some advise or make contribution to this demo. 
+    Welcome everyone to give me some advise or make contributions to this demo. 
