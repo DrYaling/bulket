@@ -1,4 +1,4 @@
-# unreal-with-rust
+# bulket
 unreal engine third persion demo written with rust (and c++ as middleware)
 
 This project is based on [unreal-rust](https://github.com/MaikKlein/unreal-rust.git), so the license was both MIT and Apache.
