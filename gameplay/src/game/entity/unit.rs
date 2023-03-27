@@ -3,7 +3,6 @@ use glam::{Vec3, Quat};
 use shared::boxed::MutexArc;
 
 use crate::game::{
-    animation::{PlayAnimInfo, self}, 
     manager::anim_notify_manager::AnimNotifyState
 };
 
@@ -42,16 +41,16 @@ pub trait IUnit: Sized{
     fn get_state(&self) -> &FUnitState;
     #[allow(unused)]
     #[inline]
-    fn play_animation(&mut self, animation: PlayAnimInfo) -> bool{ false }
+    fn play_animation(&mut self, animation: engine_api::animation::PlayAnimInfo) -> bool{ false }
     #[allow(unused)]
     #[inline]
     fn set_anim_state(&self, anim_state: UName, state: engine_api::AnimStateParam) -> bool {
         // self.character.set_anim_state(anim_state, state)
-        animation::set_anim_state(self, anim_state, state)
+        engine_api::animation::set_anim_state(self.uuid(), anim_state, state)
     }
     #[inline]
     fn set_fixed_state(&self, fixed_state: EFixeAnimState, state: engine_api::AnimStateParam) -> bool{
-        animation::set_fixed_state(self, fixed_state, state)
+        engine_api::animation::set_fixed_state(self.uuid(), fixed_state, state)
     }
     #[inline]
     fn on_anim_notify(&mut self, _notify: AnimNotifyState){
@@ -70,11 +69,11 @@ pub trait IUnit: Sized{
     fn get_scale(&self) -> f32 { 1.0 }
     #[inline]
     fn enter_combat(&mut self){
-        animation::set_fixed_state(self, EFixeAnimState::InCombat, AnimStateParam::bool(true));
+        engine_api::animation::set_fixed_state(self.uuid(), EFixeAnimState::InCombat, AnimStateParam::bool(true));
     }
     #[inline]
     fn leave_combat(&mut self){
-        animation::set_fixed_state(self, EFixeAnimState::InCombat, AnimStateParam::bool(false));
+        engine_api::animation::set_fixed_state(self.uuid(), EFixeAnimState::InCombat, AnimStateParam::bool(false));
     }
     //distance in miters this unit can see target
     #[inline]

@@ -2,18 +2,19 @@
 
 #include "RustGameInstance.h"
 #include "Kismet/GameplayStatics.h"
-#include "RustApi.h"
-#include "RustPlugin.h"
-#include "RustGameController.h"
-#include "RustCharacter.h"
+#include "FFI/RustApi.h"
+#include "FFI/RustPlugin.h"
+#include "Controller/RustGameController.h"
+#include "GameUnit/RustCharacter.h"
 #include "RustGameMode.h"
 #include "EngineUtils.h"
-#include "RustController.h"
+#include "Controller/RustController.h"
 #include "GameFramework/PlayerStart.h"
 #include <EnhancedInputComponent.h>
 #include "GameConfig.h"
-#include "RustPawn.h"
-
+#include "GameUnit/RustPawn.h"
+#include "GameUnit/RustActor.h"
+#include "Animation/RustAnimInstance.h"
 static URustGameInstance* instance = nullptr;
 URustGameInstance* URustGameInstance::GetInstance() {
 	return instance;
@@ -38,8 +39,8 @@ void URustGameInstance::OnGameObjectSpawned(IRustObjectInterface* Object)
 	AActor* Actor = Cast<AActor>(Object);
 	if (!Actor)
 		return;
-	const auto UUID = GetUnitUUID();
 	auto& UnitState = Object->GetUnitState();
+	const auto UUID = GetUnitUUID(UnitState.UnitType);
 	UnitState.Uuid = UUID;
 	UE_LOG(LogNative, Display, TEXT("Object %d of %d spawned"), UUID, UnitState.UnitType);
 	TScriptInterface<IRustObjectInterface> RefObject;
@@ -57,6 +58,11 @@ IRustObjectInterface* URustGameInstance::GetObjectByUUID(int32 UUID)
 {
 	const auto Target = AllObjects.Find(UUID);
 	return Target != nullptr ? Target->GetInterface() : nullptr;
+}
+
+void URustGameInstance::OnGameInputFromInterface(EGameInputType Input, ETriggerEvent TriggerEvent, float Duration)
+{
+	RustPlugin->Rust.on_game_input(Input, TriggerEvent, Duration);
 }
 
 ARustCharacter* URustGameInstance::SpawnCharacter(FString BPName, FTransform transform, FString name)
@@ -96,6 +102,27 @@ URustAnimInstance* _GetAnimInstance(AActor* Current) {
 	}
 	return nullptr;
 }
+void URustGameInstance::SetGameUIWidget(UGameWidget* Window, FName UIName)
+{
+	//UE_LOG(LogNative, Display, TEXT("New UI %s"), *UIName.ToString());
+	if (const auto Widget = UIWidgets.Find(UIName)) {
+		UIWidgets.Remove(UIName);
+	}
+	static const FName UIMainName =  UGameWidget::UIMainName();
+	if (Window) {
+		UIWidgets.Add(UIName, Window);
+	}
+	if (UIName == UIMainName) {
+		UIMain = Window;
+	}
+}
+UGameWidget* URustGameInstance::GetGameUIWidget(FName UIName)
+{
+	if (const auto Widget = UIWidgets.Find(UIName)) {
+		return *Widget;
+	}
+	return nullptr;
+}
 URustAnimInstance* URustGameInstance::GetAnimInstance(IRustObjectInterface* Owner)
 {
 	AActor* Actor = Cast<AActor>(Owner);
@@ -119,7 +146,6 @@ IRustObjectInterface* URustGameInstance::GetGameObject(int32 UUID)
 		return GameObject->GetInterface();
 	return nullptr;
 }
-
 void URustGameInstance::InputControll(const FInputActionInstance& Value)
 {
 	const float Min = 0.45;
@@ -188,9 +214,17 @@ void URustGameInstance::InputControll(const FInputActionInstance& Value)
 		}
 	}
 }
-int32 URustGameInstance::GetUnitUUID()
+int32 URustGameInstance::GetUnitUUID(ERustUnitType UnitType)
 {
-	return ++UnitUUID;
+	const int32 uuid = ++UnitUUID;
+	switch (UnitType)
+	{
+		case ERustUnitType::WorldObject:
+			return uuid | (1 << 30);
+		case ERustUnitType::Character: 
+			return uuid;
+		default: return uuid | (1 << 31);
+	}
 }
 void URustGameInstance::Move(const FInputActionValue& Value)
 {
@@ -206,6 +240,7 @@ void URustGameInstance::StopJumping()
 }
 void URustGameInstance::Init()
 {
+	Super::Init();
 	SelectedCharacter = nullptr;
 }
 void URustGameInstance::StartGameInstance()
@@ -293,5 +328,8 @@ void URustGameInstance::SelectCharacter(ARustCharacter* Character)
 	if (Old != nullptr)
 		Old->SwitchController(ERustCharacterControllerType::Ai);
 	if (SelectedCharacter != nullptr)
+	{
 		SelectedCharacter->SwitchController(ERustCharacterControllerType::Player, true);
+		GameCameraEvent.Broadcast(EGameCameraEvent::SelectCharacter, Character, 0.0);
+	}
 }

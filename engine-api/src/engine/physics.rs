@@ -2,34 +2,6 @@ use std::ffi::c_void;
 use super::*;
 use crate::{AActorOpaque, Quaternion, UPrimtiveOpaque, Vector3, UName, ECollisionChannel, CollisionShape};
 
-// #[repr(C)]
-// #[derive(Copy, Clone)]
-// pub struct CollisionBox {
-//     pub half_extent_x: f32,
-//     pub half_extent_y: f32,
-//     pub half_extent_z: f32,
-// }
-
-// #[repr(C)]
-// #[derive(Copy, Clone)]
-// pub struct CollisionSphere {
-//     pub radius: f32,
-// }
-
-// #[repr(C)]
-// #[derive(Copy, Clone)]
-// pub struct CollisionCapsule {
-//     pub radius: f32,
-//     pub half_height: f32,
-// }
-
-// #[repr(C)]
-// #[derive(Copy, Clone)]
-// pub struct CollisionShape {
-//     pub data: CollisionShapeUnion,
-//     pub ty: CollisionShapeType,
-// }
-
 impl Default for CollisionShape {
     fn default() -> Self {
         Self {
@@ -40,22 +12,6 @@ impl Default for CollisionShape {
         }
     }
 }
-
-// #[repr(u32)]
-// #[derive(Copy, Clone)]
-// pub enum CollisionShapeType {
-//     Box,
-//     Capsule,
-//     Sphere,
-// }
-
-// #[repr(C)]
-// #[derive(Copy, Clone)]
-// pub union CollisionShapeUnion {
-//     pub collision_box: CollisionBox,
-//     pub sphere: CollisionSphere,
-//     pub capsule: CollisionCapsule,
-// }
 
 #[repr(C)]
 pub struct LineTraceParams {
@@ -86,6 +42,8 @@ impl Default for OverlapResult {
 pub struct HitResult {
     pub actor: *mut c_void,
     pub primtive: *mut c_void,
+    pub unit_uuid: i32,
+    pub unit_type: EUnitType,
     pub bone_name: UName,
     pub distance: f32,
     pub normal: Vector3,
@@ -114,6 +72,8 @@ impl Default for HitResult {
             pentration_depth: Default::default(),
             start_penetrating: Default::default(),
             bone_name: UName::none(),
+            unit_uuid: 0,
+            unit_type: EUnitType::Undefined,
         }
     }
 }
@@ -127,7 +87,6 @@ pub type IsSimulatingFn = unsafe extern "C" fn(primitive: *const UPrimtiveOpaque
 pub type AddForceFn = unsafe extern "C" fn(actor: *mut UPrimtiveOpaque, force: Vector3);
 
 pub type AddImpulseFn = unsafe extern "C" fn(actor: *mut UPrimtiveOpaque, force: Vector3);
-
 pub type LineTraceFn = unsafe extern "C" fn(
     start: Vector3,
     end: Vector3,
@@ -167,17 +126,16 @@ pub type SweepMultiFn = unsafe extern "C" fn(
     max_results: usize,
     results: *mut HitResult,
 ) -> u32;
-
-
 pub fn line_trace(
     start: Vector3,
     end: Vector3,
     params: LineTraceParams,
     result: &mut HitResult,
-) -> u32{
-    unsafe{ (super::bindings().physics_fns.line_trace)(start, end, params, result)}
+) -> bool{
+    unsafe{ (super::bindings().physics_fns.line_trace)(start, end, params, result) != 0}
 }
 
+#[allow(unused)]
 pub fn get_bounding_box_extent(primitive: *const UPrimtiveOpaque) -> Vector3{
     todo!()
 }
@@ -204,7 +162,7 @@ pub fn sweep_multi(
 ) -> u32{
     unsafe{ (super::bindings().physics_fns.sweep_multi)(start, end, rotation, params, collision_shape, max_results, results)}
 }
-
+#[allow(unused)]
 pub fn overlap_multi(
     collision_shape: CollisionShape,
     position: Vector3,
@@ -216,6 +174,7 @@ pub fn overlap_multi(
     todo!()
 }
 
+#[allow(unused)]
 pub fn get_collision_shape(primitive: *const UPrimtiveOpaque, shape: *mut CollisionShape) -> u32{
     todo!()
 }

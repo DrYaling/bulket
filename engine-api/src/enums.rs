@@ -43,3 +43,20 @@ pub enum ECollisionChannel{
 	ECC_OverlapAll_Deprecated = 32,
 	ECC_MAX = 33,
 }
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ECollisionEnabled{
+	NoCollision = 0,
+	QueryOnly = 1,
+	PhysicsOnly = 2,
+	QueryAndPhysics = 3,
+	ProbeOnly = 4,
+	QueryAndProbe = 5,
+}
+#[repr(u8)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ETeleportType{
+	None = 0,
+	TeleportPhysics = 1,
+	ResetPhysics = 2,
+}

@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "RustApi.h"
-#include "RustPlugin.h"
 #include "RustGameMode.generated.h"
 class ARustCharacter;
 
@@ -41,6 +39,10 @@ public:
 	UFUNCTION()
 		void OnActorDestroyed(AActor* Actor);
 
+	UFUNCTION(BlueprintCallable, Category = "Rust|UI")
+		void ShowUI(TSubclassOf<class UGameWidget> Widget, int32 ZOrder =  0);
+	UFUNCTION(BlueprintCallable, Category = "Rust|UI")
+		void ShowUIByName(FName Widget, int32 ZOrder = 0);
 private:
 
 };

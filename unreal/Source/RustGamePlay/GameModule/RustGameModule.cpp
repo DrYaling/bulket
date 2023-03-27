@@ -3,7 +3,7 @@
 #include "PropertyEditorModule.h"
 #include "../Editor/AnimParamDetail.h"
 #include "Modules/ModuleManager.h"
-#include "../RustApi.h"
+#include "../FFI/RustApi.h"
 
 void RustGameModule::StartupModule()
 {

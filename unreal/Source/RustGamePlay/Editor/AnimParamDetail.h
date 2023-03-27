@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 #include "UObject/NoExportTypes.h"
-#include "../RustAnimInstance.h"
+#include "../Animation/RustAnimInstance.h"
 /**
  * https://blog.csdn.net/justtestlike/article/details/84894896
  *

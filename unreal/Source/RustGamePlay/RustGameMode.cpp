@@ -5,15 +5,19 @@
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "EnhancedInputComponent.h"
-#include "RustPlugin.h"
-#include "RustApi.h"
-#include "RustCharacter.h"
+#include "FFI/RustPlugin.h"
+#include "FFI/RustApi.h"
+#include "GameUnit/RustCharacter.h"
 #include <Kismet/GameplayStatics.h>
 #include <IDirectoryWatcher.h>
 #include <DirectoryWatcherModule.h>
 #include "RustGameInstance.h"
-#include "RustActor.h"
-#include "RustPawn.h"
+#include "GameUnit/RustActor.h"
+#include "GameUnit/RustPawn.h"
+#include "Blueprint/GameViewportSubsystem.h"
+#include "GameConfig.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameUnit/RustActor.h"
 ARustGameMode::ARustGameMode()
 {
 	//set default pawn class to our Blueprinted character
@@ -44,6 +48,7 @@ void ARustGameMode::StartPlay()
 		UE_LOG(LogNative, Error, TEXT("PluginNative Not Initialized"));
 		return;
 	}
+	UE_LOG(LogNative, Error, TEXT("Cha %llu, Actor Size %llu, Movement %llu, Pawn %llu"), sizeof(ACharacter), sizeof(AActor), sizeof(UCharacterMovementComponent), sizeof(APawn));
 	Super::StartPlay();
 	GetWorld()->AddOnActorSpawnedHandler(
 		FOnActorSpawned::FDelegate::CreateUObject(this, &ARustGameMode::OnActorSpawnedHandler));
@@ -71,29 +76,36 @@ void ARustGameMode::StartPlay()
 }
 void ARustGameMode::OnActorSpawnedHandler(AActor* actor)
 {
+	const auto SGame = sGameInstance;
+	if (!SGame)
+		return;
 	constexpr EventType Type = EventType::ActorSpawned;
 	ActorSpawnedEvent Event;
 	Event.unitState = nullptr;
 	Event.actor = static_cast<AActorOpaque*>(actor);
-	auto SGame = sGameInstance;
 	if(const auto RustObject = Cast<IRustObjectInterface>(actor))
 	{
 		SGame->OnGameObjectSpawned(RustObject);
 		auto UnitState = RustObject->GetUnitState();
 		Event.unitState = &UnitState;
+		const auto Plugin = SGame->GetPlugin();
+		Plugin->Rust.unreal_event(&Type, static_cast<void*>(&Event));
 	}
-	const auto Plugin = SGame->GetPlugin();
-	Plugin->Rust.unreal_event(&Type, static_cast<void*>(&Event));
 }
 //
 void ARustGameMode::Tick(float Dt)
 {
 	Super::Tick(Dt);
-	auto Plugin = sGameInstance->GetPlugin();
+	//UE_LOG(LogNative, Display, TEXT("Tick %f"), Dt);
+	const auto SGame = sGameInstance;
+	if (!SGame)
+		return;
+	const auto Plugin = SGame->GetPlugin();
 	if (Plugin->NeedsInit)
 	{
 		StartPlay();
 	}
+	//int32 nano = Dt * 1000000;
 	if (Plugin->IsLoaded() && Plugin->Rust.tick(Dt) == ResultCode::Panic)
 	{
 		Plugin->Unload();
@@ -103,7 +115,10 @@ void ARustGameMode::Tick(float Dt)
 void ARustGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	auto Plugin = sGameInstance->GetPlugin();
+	const auto SGame = sGameInstance;
+	if (!SGame)
+		return;
+	const auto Plugin = SGame->GetPlugin();
 	if (Plugin->IsLoaded() && Plugin->Rust.end_play(static_cast<REndPlayReason>(EndPlayReason)) == ResultCode::Panic)
 	{
 		Plugin->Unload();
@@ -122,50 +137,97 @@ void ARustGameMode::BeginDestroy()
 
 void ARustGameMode::OnActorBeginOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
+	const auto SGame = sGameInstance;
+	if (!SGame)
+		return;
 	constexpr EventType Type = EventType::ActorBeginOverlap;
 	ActorBeginOverlap Event;
 	Event.overlapped_actor = static_cast<AActorOpaque*>(OverlappedActor);
 	Event.other = static_cast<AActorOpaque*>(OtherActor);
-	const auto Plugin = sGameInstance->GetPlugin();
+	const auto Plugin = SGame->GetPlugin();
 	Plugin->Rust.unreal_event(&Type, static_cast<void*>(&Event));
 }
 
 void ARustGameMode::OnActorEndOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
+	const auto SGame = sGameInstance;
+	if (!SGame)
+		return;
 	constexpr EventType Type = EventType::ActorEndOverlap;
 	ActorEndOverlap Event;
 	Event.overlapped_actor = static_cast<AActorOpaque*>(OverlappedActor);
 	Event.other = static_cast<AActorOpaque*>(OtherActor);
-	const auto Plugin = sGameInstance->GetPlugin();
+	const auto Plugin = SGame->GetPlugin();
 	Plugin->Rust.unreal_event(&Type, static_cast<void*>(&Event));
 }
 
 void ARustGameMode::OnActorHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit)
 {
+	const auto SGame = sGameInstance;
+	if (!SGame || !SGame->GetPlugin())
+		return;
 	constexpr EventType Type = EventType::ActorOnHit;
 	ActorHitEvent Event;
 	Event.self_actor = static_cast<AActorOpaque*>(SelfActor);
 	Event.other = static_cast<AActorOpaque*>(OtherActor);
 	Event.normal_impulse = ToVector3(NormalImpulse);
-	const auto Plugin = sGameInstance->GetPlugin();
+	const auto Plugin = SGame->GetPlugin();
 	Plugin->Rust.unreal_event(&Type, static_cast<void*>(&Event));
 }
 
 void ARustGameMode::OnActorDestroyed(AActor* Actor)
 {
+	const auto SGame = sGameInstance;
+	if (!SGame || !Actor)
+		return;
 	constexpr EventType Type = EventType::ActorDestroy;
 	ActorDestroyEvent Event;
-	auto SGame = sGameInstance;
 	Event.actor = static_cast<AActorOpaque*>(Actor);
-	const auto RustObject = Cast<IRustObjectInterface>(Actor);
-	if (RustObject)
+	if (const auto RustObject = Cast<IRustObjectInterface>(Actor))
 	{
 		auto UnitState = RustObject->GetUnitState();
 		Event.unitState = &UnitState;
-	}
-	const auto Plugin = SGame->GetPlugin();
-	Plugin->Rust.unreal_event(&Type, static_cast<void*>(&Event));
-	if (RustObject) {
+		const auto Plugin = SGame->GetPlugin();
+		Plugin->Rust.unreal_event(&Type, static_cast<void*>(&Event));
 		SGame->OnGameObjectDestroyed(RustObject);
 	}
+}
+
+void ARustGameMode::ShowUIByName(FName Widget, int32 ZOrder)
+{
+	if (const auto SGame = sGameInstance) {
+		if (const auto Config = SGame->GetGameConfig()) {
+			if (const auto WidgetBP = Config->GetGameWidget(Widget)) {
+				ShowUI(WidgetBP, ZOrder);
+			}
+		}
+	}
+	else{
+
+		UE_LOG(LogNative, Warning, TEXT("UI %s Create fail "), *Widget.ToString());
+	}
+}
+
+void ARustGameMode::ShowUI(TSubclassOf<class UGameWidget> Widget, int32 ZOrder)
+{
+	 auto GameWidget = CreateWidget<UGameWidget>(GetWorld(), Widget);
+	 if (GameWidget) {
+		 if (UGameViewportSubsystem* Subsystem = UGameViewportSubsystem::Get(GetWorld())) {
+			 FGameViewportWidgetSlot ViewportSlot;
+			 if (false)
+			 {
+				 ViewportSlot = Subsystem->GetWidgetSlot(GameWidget);
+			 }
+			 ViewportSlot.ZOrder = ZOrder;
+			 Subsystem->AddWidget(GameWidget, ViewportSlot);
+		 }
+		 else {
+			 GameWidget->AddToViewport(ZOrder);
+			 UE_LOG(LogNative, Warning, TEXT("UI sub system not found"));
+		 }
+	 }
+	 else{
+
+		 UE_LOG(LogNative, Warning, TEXT("UI %s Create fail "), *Widget->GetConfigName());
+	 }
 }

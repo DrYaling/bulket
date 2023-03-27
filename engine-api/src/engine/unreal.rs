@@ -1,3 +1,5 @@
+use glam::Vec3;
+
 use crate::{*};
 use std::{ffi::c_void, os::raw::c_char};
 
@@ -13,7 +15,14 @@ pub enum UObjectType {
     UClass,
 }
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "server_mode", 
+    derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)
+)]
+#[cfg_attr(
+    not(feature = "server_mode"), 
+    derive(Debug, Clone, Copy, PartialEq, Eq)
+)]
 pub enum EGameInputType {
     None = 0,
     ControlA,
@@ -26,8 +35,32 @@ pub enum EGameInputType {
     SkillBar4,
     SkillBar5,
 }
+impl EGameInputType{
+    pub fn new(key: u8) -> Self{
+        use EGameInputType::*;
+        match key {
+            1 => ControlA,
+            2 => ControlB,
+            3 => ControlC,
+            4 => ControlD,
+            5 => SkillBar1,
+            6 => SkillBar2,
+            7 => SkillBar3,
+            8 => SkillBar4,
+            9 => SkillBar5,
+            _ => EGameInputType::None
+        }
+    }
+}
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "server_mode", 
+    derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)
+)]
+#[cfg_attr(
+    not(feature = "server_mode"), 
+    derive(Debug, Clone, Copy, PartialEq, Eq)
+)]
 pub enum ETriggerEvent
 {
 	// No significant trigger state changes occurred and there are no active device inputs
@@ -68,7 +101,14 @@ pub enum REndPlayReason
 }
 ///unit type of game
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(
+    feature = "server_mode", 
+    derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)
+)]
+#[cfg_attr(
+    not(feature = "server_mode"), 
+    derive(Debug, Clone, Copy, PartialEq, Eq)
+)]
 pub enum EUnitType
 {
 	/**
@@ -254,6 +294,13 @@ pub type SetViewTargetFn = unsafe extern "C" fn(actor: *const AActorOpaque);
 
 pub type DestroyActorFn = unsafe extern "C" fn(actor: *const AActorOpaque);
 
+type SetActorLocationOrRotationFn = unsafe extern "C" fn(
+    actor: *mut AActorOpaque, 
+    vector: Vector3,
+    set_location: bool,
+    hit: *mut HitResult,
+    teleport: ETeleportType,
+) -> bool;
 #[repr(C)]
 pub struct ActorFns {
     pub get_spatial_data: GetSpatialDataFn,
@@ -266,6 +313,7 @@ pub struct ActorFns {
     pub get_class: GetClassFn,
     pub set_view_target: SetViewTargetFn,
     pub destroy_actor: DestroyActorFn,
+    set_actor_location_or_rotation: SetActorLocationOrRotationFn
 }
 #[repr(C)]
 pub struct UnrealBindings {
@@ -338,16 +386,28 @@ impl Default for ActorComponentPtr {
 pub type EntryUnrealBindingsFn =
 unsafe extern "C" fn(bindings: UnrealBindings, rust_bindings: *mut RustBindings) -> u32;
 pub type BeginPlayFn = unsafe extern "C" fn() -> ResultCode;
-pub type TickFn = unsafe extern "C" fn(dt: f32) -> ResultCode;
+pub type TickFn = unsafe extern "C" fn(dt: std::ffi::c_float) -> ResultCode;
 pub type VoidFn = unsafe extern "C" fn() -> ResultCode;
 pub type BoolFn = unsafe extern "C" fn(bool) -> ResultCode;
 pub type EndPlayFn = unsafe extern "C" fn(REndPlayReason) -> ResultCode;
 pub type LogLevelFn = unsafe extern "C" fn(ll: i32) -> ResultCode;
 pub type OnGameInputFn = unsafe extern "C" fn(input: EGameInputType, ETriggerEvent, f32) -> ResultCode;
 pub type RetrieveUuids = unsafe extern "C" fn(ptr: *mut Uuid, len: *mut usize);
-pub type GetVelocityRustFn =
-    unsafe extern "C" fn(actor: *const AActorOpaque, velocity: &mut Vector3);
-
+pub type GamePlaySetUnitSkills = unsafe extern "C" fn(uuid: i32, skills: *mut SkillWithKeyBinding, skill_len: u32) -> ResultCode;
+pub type GetVelocityRustFn = unsafe extern "C" fn(actor: *const AActorOpaque, velocity: &mut Vector3);
+#[repr(C)]
+#[cfg_attr(
+    feature = "server_mode", 
+    derive(Debug, Clone, Copy, Serialize, Deserialize)
+)]
+#[cfg_attr(
+    not(feature = "server_mode"), 
+    derive(Debug, Clone, Copy)
+)]
+pub struct SkillWithKeyBinding{
+    pub skill_id: u32,
+    pub key: EGameInputType,
+}
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EventType {
@@ -400,7 +460,8 @@ pub struct RustBindings {
     pub end_play: EndPlayFn,
     pub on_pause: BoolFn,
     pub on_game_input: OnGameInputFn,
-    pub anim_fns: AnimationFns
+    pub anim_fns: AnimationFns,
+    pub set_unit_skills: GamePlaySetUnitSkills,
     // pub reflection_fns: ReflectionFns,
     // pub allocate_fns: AllocateFns,
 }
@@ -584,4 +645,23 @@ pub type AnimNotifyFn = unsafe extern "C" fn(
 #[repr(C)]
 pub struct AnimationFns{
     pub notify_fn: AnimNotifyFn,
+}
+#[inline]
+pub fn set_actor_location(actor: &AActor, location: Vec3, teleport: ETeleportType) -> bool{
+    unsafe{
+        (bindings().actor_fns.set_actor_location_or_rotation)(actor.inner(), location.into(), true, std::ptr::null_mut(), teleport)
+    }
+}
+///set actor location,check collision
+#[inline]
+pub fn set_actor_location_checked(actor: &AActor, location: Vec3, hit_result: &mut HitResult, teleport: ETeleportType) -> bool{
+    unsafe{
+        (bindings().actor_fns.set_actor_location_or_rotation)(actor.inner(), location.into(), true, hit_result as _, teleport)
+    }
+}
+#[inline]
+pub fn set_actor_rotation(actor: &AActor, rotation: Vec3) -> bool{
+    unsafe{
+        (bindings().actor_fns.set_actor_location_or_rotation)(actor.inner(), rotation.into(), false, std::ptr::null_mut(), ETeleportType::None)
+    }
 }

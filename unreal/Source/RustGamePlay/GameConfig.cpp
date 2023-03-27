@@ -3,18 +3,18 @@
 
 #include "GameConfig.h"
 #include "Animation/AnimMontage.h"
-#include "RustCharacter.h"
-#include "RustActor.h"
-#include "RustPawn.h"
+#include "GameUnit/RustCharacter.h"
+#include "GameUnit/RustActor.h"
+#include "GameUnit/RustPawn.h"
+#include "UI/GameWidget.h"
 UAnimMontage* UGameConfig::GetMontage(FName Name)
 {
 	if (auto Class = GameMontages.Find(Name)) {
-		UAnimMontage* Montage = Class->Montage.Get();
-		if (!Montage)
-			Montage = Class->Montage.LoadSynchronous();
-		if (Montage) {
-			return Montage;
-		}
+		if (Class->Montage.IsNull())
+			return nullptr;
+		if(!Class->Montage.IsValid())
+			Class->Montage.LoadSynchronous();
+		return Class->Montage.Get();
 	}
 	return nullptr;
 }

@@ -6,8 +6,8 @@
 #include "Engine/GameInstance.h"
 #include "InputActionValue.h"
 #include "InputAction.h"
-#include "RustActor.h"
-#include "RustApi.h"
+#include "UI/GameWidget.h"
+#include "GameTypes.h"
 #include "RustGameInstance.generated.h"
 class FPlugin;
 class ARustGameMode;
@@ -16,6 +16,10 @@ class ARustCharacter;
 class ARustController;
 class ARustPawn;
 class UGameConfig;
+class ARustActor;
+class IRustObjectInterface;
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FGameCameraEventDelegate, EGameCameraEvent, AActor*, float);
+//typedef GameCameraEventDelegate::FDelegate FGameCameraEventDelegate;
 /**
  * 
  */
@@ -61,6 +65,10 @@ public:
 	 * get game object by uuid
 	 */
 	FORCEINLINE IRustObjectInterface* GetObjectByUUID(int32 UUID);
+	/**
+	* game input from ui
+	*/
+	void OnGameInputFromInterface(EGameInputType Input, ETriggerEvent TriggerEvent, float Duration);
 	/**
 	 *get game config
 	 */
@@ -121,6 +129,20 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Rust")
 		bool IsGameServer() const { return IsServer; }
+	UFUNCTION(BlueprintCallable, Category = "Rust|Game UI")
+		/**
+		 *set ui widget
+		 */
+		void SetGameUIWidget(UGameWidget* Window, FName UIName);
+	UFUNCTION(BlueprintCallable, Category = "Rust|Game UI")
+		/**
+		 *get ui widget
+		 */
+		UGameWidget* GetGameUIWidget(FName UIName);
+	UFUNCTION(BlueprintCallable, Category = "Rust|Game UI")
+	UGameWidget* GetGameMainUI() {
+		return UIMain;
+	}
 	/*
 	* get target actor anim instance
 	*/
@@ -129,9 +151,14 @@ public:
 	* get get GameObject
 	*/
 	 IRustObjectInterface* GetGameObject(int32 UUID);
+	/**
+	 * @brief game event delegate
+	 */
+	//UPROPERTY(BlueprintReadWrite, Category = "Rust|Camera")
+	FGameCameraEventDelegate GameCameraEvent;
 private:
 	void InputControll(const FInputActionInstance& Value);
-	FORCEINLINE int32 GetUnitUUID();
+	FORCEINLINE int32 GetUnitUUID(ERustUnitType UnitType);
 private:
 		FPlugin* RustPlugin;
 		UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Rust", meta = (AllowPrivateAccess = "true"))
@@ -156,7 +183,10 @@ private:
 	 */
 	UPROPERTY()
 		TMap<int32, TScriptInterface<IRustObjectInterface>> AllObjects;
-
+	UPROPERTY()
+		TMap<FName, UGameWidget*> UIWidgets;
+	UPROPERTY()
+		UGameWidget* UIMain;
 
 	bool IsServer = false;
 	int32 UnitUUID = 0;

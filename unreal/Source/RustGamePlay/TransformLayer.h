@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/EngineTypes.h"
-#include "RustProperty.h"
+#include "Components/RustProperty.h"
 #include "TransformLayer.generated.h"
 class ARustCharacter;
 class ARustController;
@@ -60,6 +60,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Rust|GamePlay")
 		static ERustUnitType GetRustObjectType(const AActor* Actor); 
+	/**
+	* get unit type by uuid
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Rust|GamePlay")
+		static ERustUnitType GetUnitType(int32 UUID);
+
 
 	// ----------------------- Animation ------------------------
 
@@ -68,6 +74,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Rust|GamePlay")
 		static int32 GetNameHash(const FString& Name);
+	UFUNCTION(BlueprintCallable, Category = "Rust|Animation")
+		static UAnimSequence* AnimationClip(class UAnimSequence* Anim, int StartFrame, int EndFrame);
+
 
 };
 

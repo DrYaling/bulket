@@ -1,8 +1,8 @@
 #include "GamePlayFFI.h"
 #include "../RustGameInstance.h"
-#include "../RustApi.h"
+#include "../FFI/RustApi.h"
 #include "..//GameConfig.h"
-#include "../Binder.h"
+#include "../FFI/Binder.h"
 
 GameplayFns GameplayFns::Create()
 {
@@ -13,5 +13,10 @@ GameplayFns GameplayFns::Create()
 	GamePlayFns.name_to_string = &UNameToString;
 	GamePlayFns.get_montage = &GetMontage;
 	GamePlayFns.set_unit_movable = &SetMovable;
+	GamePlayFns.set_hit_state = &SetHitState;
+	GamePlayFns.set_anim_rate = &SetAnimPlayRate;
+	GamePlayFns.game_event_notify = &GameEventNotify;
+	GamePlayFns.get_component = &GetActorComponent;
+	GamePlayFns.set_anim_freeze = &SetAnimFreeze;
 	return GamePlayFns;
 }

@@ -7,7 +7,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
-#include "../RustAnimInstance.h"
+#include "../Animation/RustAnimInstance.h"
 // engine header
 #include "DetailLayoutBuilder.h"
 #include "DetailCategoryBuilder.h"
@@ -16,7 +16,7 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Input/SNumericDropDown.h"
 #include "Widgets/Input/SVectorInputBox.h"
-#include "../RustApi.h"
+#include "../FFI/RustApi.h"
 #define LOCTEXT_NAMESPACE "FAnimParamDetail"
 
 

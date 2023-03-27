@@ -1,6 +1,55 @@
 #pragma once
 #include "CoreTypes.h"
 
+//unit type
+UENUM(BlueprintType)
+enum class ERustUnitType : uint8
+{
+    /**
+     * @brief not initialized unit
+     */
+    Undefined = 0,
+    /**
+     * @brief static world object
+     */
+    WorldObject,
+    /**
+     * @brief creature with ai controller
+     */
+    Creature,
+    /**
+     * @brief character controlled by player
+     */
+    Character,
+    /**
+     * @brief pet controlled by ai & player
+     */
+    Pet,
+};
+UENUM(BlueprintType)
+enum class EGameNotifyEventType : uint8 {
+    None = 0 UMETA(Hidden),
+    /**
+    * unit attr of type(SubEvent) changed
+    */
+    UnitAttributeChanged,
+    /**
+    * skill of skill bar(subEvent) casted
+    */
+    SkillCasted,
+    /**
+    * skill of skill bar (SubEvent) change to EventValue
+    */
+    SkillChanged,
+    /**
+    * target changed to EventValue
+    */
+    OnTargetChanged,
+    /**
+    * game input, used for gcd control
+    */
+    OnGameInput,
+};
 
 //thread unsafe
 struct NativeString {
@@ -143,3 +192,33 @@ struct UName
 using UObjectOpague = void;
 using UClassOpague = void;
 using AActorOpaque = void;
+UENUM(BlueprintType)
+enum class EAttributeType : uint8 {
+    None = 0,
+    //精气-感知-术法
+    Senseless,
+    //血气-外循环
+    BloodAura,
+    //神-内外循环-罡气和回复
+    Circulating,
+    Health,
+    MaxHealth,
+    Mana,
+    MaxMana,
+    Critical,
+    CriticalDamage,
+    Hast,
+    Speed,
+    MaxCount
+};
+enum class EGameComponentType : uint8 {
+    CharacterMovement,
+    SkeletalMesh,
+    Camera,
+    Capsule,
+    Rust,
+};
+struct ComponentInfo {
+    EGameComponentType ComponentType;
+    void* Component;
+};

@@ -6,7 +6,6 @@ use glam::Vec3;
 use shared::boxed::MutexArc;
 
 use crate::game::{
-    animation::{Animation, PlayAnimInfo, self}, 
     manager::{InputManager, combat_manager}, 
     anim_notify_manager::AnimNotifyState, 
     SchedulerManager,
@@ -88,7 +87,7 @@ impl IUnit for Character{
                     self.is_attacking = true;
                     self.set_movable(false);
                     //"Attack", Some("BaseAtk")
-                    self.play_animation(PlayAnimInfo::create().with_name_str("Attack").with_section(UName::new("BaseAtk")));
+                    self.play_animation(engine_api::animation::PlayAnimInfo::create().with_name_str("Attack").with_section(UName::new("BaseAtk")));
                 }
             }
         }
@@ -136,7 +135,7 @@ impl IUnit for Character{
                         let hp = target.get_attr(EAttributeType::Health);
                         target.set_attr(EAttributeType::Health, hp - 20);
                         if !target.is_alive(){
-                            target.play_animation(PlayAnimInfo::create().with_name_str("MonsterDie"));
+                            target.play_animation(engine_api::animation::PlayAnimInfo::create().with_name_str("MonsterDie"));
                         }
                         else{
                             //target.play_animation(PlayAnimInfo::create().with_name_str("MonsterHit"));
@@ -198,9 +197,9 @@ impl IUnit for Character{
         &self.character.state
     }
     #[inline]
-    fn play_animation(&mut self, animation: PlayAnimInfo) -> bool {
+    fn play_animation(&mut self, animation: engine_api::animation::PlayAnimInfo) -> bool {
         //self.character.PlayAnimMontage(AnimMontage, InPlayRate, StartSectionName)
-        animation::play_montage(&mut self.character, animation)
+       engine_api:: animation::play_montage(&mut self.character, animation)
     }
     fn on_anim_notify(&mut self, notify: AnimNotifyState) {
         //扣血
@@ -222,7 +221,7 @@ impl IUnit for Character{
     }
     #[inline]
     fn leave_combat(&mut self) {
-        animation::set_fixed_state(self, EFixeAnimState::InCombat, AnimStateParam::bool(true));
+        engine_api::animation::set_fixed_state(self.uuid(), EFixeAnimState::InCombat, AnimStateParam::bool(true));
         self.target = Target::None;
     }
     #[inline]

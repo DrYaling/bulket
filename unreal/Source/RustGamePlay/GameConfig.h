@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Templates/UnrealTemplate.h"
 #include "GameConfig.generated.h"
 class ARustPawn;
 class ARustActor;
@@ -54,6 +53,16 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable)
 		TSubclassOf<ARustCharacter> GetCharacterTemplate(FName Name) const;
+	/*
+	* get game widget
+	*/
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<UGameWidget> GetGameWidget(FName Name) const {
+		if (const auto W = GameWidgets.Find(Name)) {
+			return *W;
+		}
+		return nullptr;
+	}
 private:
 	/*
 	* game montagles
@@ -76,4 +85,9 @@ private:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Rust", meta = (AllowPrivateAccess = "true"))
 		TMap<FName, TSubclassOf<ARustCharacter>> CharacterTemplates;
 
+	/*
+	* character Templates
+	*/
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Rust|UI", meta = (AllowPrivateAccess = "true"))
+		TMap<FName, TSubclassOf<class UGameWidget>> GameWidgets;
 };

@@ -30,7 +30,9 @@ public class RustGamePlay : ModuleRules
             "EditorWidgets",
             "ClassViewer",
             "EditorStyle",
-            "AIModule"
+            "AIModule",
+            "UMG",
+            "GameplayTags"
         });
 	}
 }

@@ -1,7 +1,7 @@
 //! game creature
 use engine_api::IPtr;
 
-use crate::game::{animation::{PlayAnimInfo, self}, skills::Skill};
+use crate::game::{skills::Skill};
 
 use super::{attribute::{Attribute, EAttributeType}, unit::IUnit};
 pub type Monster = Creature;
@@ -57,8 +57,8 @@ impl IUnit for Creature{
         &self.creature.state
     }
     #[inline]
-    fn play_animation(&mut self, montage: PlayAnimInfo) -> bool {
-        animation::play_anim_montage(&mut self.creature.anim_instance, montage)
+    fn play_animation(&mut self, montage: engine_api::animation::PlayAnimInfo) -> bool {
+        engine_api::animation::play_anim_montage(&mut self.creature.anim_instance, montage)
     }
     #[inline]
     fn anim_instance(&self) -> Option<&engine_api::UAnimInstance> {

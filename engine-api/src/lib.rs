@@ -1,13 +1,15 @@
 //! unreal engine api bindings
 #[macro_use]
 extern crate shared;
+#[cfg(feature = "server_mode")]
+#[macro_use]
+extern crate serde_derive;
 mod binders;
-mod ffi;
 mod engine;
-mod base;
+mod extension;
 mod enums;
+pub mod animation;
 pub use binders::*;
-pub use ffi::*;
-pub use base::*;
+pub use extension::*;
 pub use engine::*;
 pub use enums::*;

@@ -29,6 +29,10 @@ pub fn create_spawn(spawn_event: *const ActorSpawnedEvent) -> Option<SpawnObject
             EUnitType::Pet => SpawnObject::Character(CharacterBase{ 
                 entity: ACharacter::from_ptr(spawn_event.actor)?, 
                 anim_instance: UAnimInstance::from_ptr(state.animation).unwrap(),
+                movement: UCharacterMovementComponent::from_ptr(get_component(
+                    &AActor::from_ptr(spawn_event.actor)?, 
+                    EComponentType::CharacterMovement)?.component
+                ).unwrap(),
                 state
             }),
             EUnitType::Undefined => return None,
@@ -84,6 +88,7 @@ pub struct CharacterBase{
     /// c++ ARustCharacter
     entity: ACharacter,  
     pub anim_instance: UAnimInstance,
+    pub movement: UCharacterMovementComponent,
     pub state: FUnitState,
 }
 impl Deref for CharacterBase{

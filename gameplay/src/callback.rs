@@ -89,6 +89,16 @@ pub extern "C" fn tick(dt: f32) -> ResultCode {
     }
 }
 
+pub extern "C" fn set_unit_skills(_uuid: i32, _skills: *mut SkillWithKeyBinding, _skill_len: u32) -> ResultCode{
+    match std::panic::catch_unwind(||{
+    }){
+        Ok(_) => ResultCode::Success,
+        Err(e) => {
+            error!("set skill panic {:?}", e);
+            ResultCode::Panic
+        },
+    }
+}
 pub extern "C" fn init_native() -> ResultCode {
     debug!("init native");
     ResultCode::Success
@@ -169,6 +179,7 @@ pub(crate) fn build_bindings() -> RustBindings{
         anim_fns: AnimationFns{
             notify_fn: on_anim_notify,
         },
+        set_unit_skills: set_unit_skills,
         // reflection_fns: engine::create_reflection_fns(),
         // allocate_fns: engine::create_allocate_fns(),
     }
